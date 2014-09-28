@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <link rel="stylesheet" href="default.css" type="text/css"/>
+	<title>TrueSkill Server</title>
+
+	<script>
+	    var Error = {{!Error}}
+	    
+	    var Ranking = {{!Ranking}};
+	    var Players = {{!Players}};
+	    var Mus = {{!Mus}};
+	    var Sigmas = {{!Sigmas}};
+	    var Etas = {{!Etas}};
+	    var Weights = {{!Weights}};
+	    var Teams = {{!Teams}};
+	    var PlayerTeams = {{!PlayerTeams}};
+	    var TeamPlayers = {};	    
+	    
+	    var rMus = {{!rMus}}
+	    var rSigmas= {{!rSigmas}}
+	    var rEtas = {{!rEtas}}
+
+	    var HideForm = {{!HideForm}}
+	    
+	    function autoexec(event) {	 
+	       	if (Error !== null) {
+	       		$('divError').innerHTML = Error;
+	            $('divError').style.display = 'block';
+	       	}
+	    	
+	       	if (HideForm) {
+	       		$('MatchInfoForm').style.display = 'none';
+	       	} else {
+	       		$('MatchInfoForm').style.display = 'block';
+	       		
+		       	if (Teams.length === 0) {
+		            $('divIndividualPlay').style.display = 'block';
+		            $('divTeamPlay').style.display = 'none';	
+		            
+		            if (Players.length > 1) {
+			       		$('NumPlayers').value = Players.length;
+			
+			            adjustTable($('NumPlayers'));
+		            }	    		
+		       	} else {
+		            $('divIndividualPlay').style.display = 'none';
+		            $('divTeamPlay').style.display = 'block';
+		            
+		       		if (Teams.length > 1) {
+			            TeamPlayers = {};
+			            for (var i = 0; i < Teams.length; i++) TeamPlayers[Teams[i]] = [];
+			            for (var i = 0; i < PlayerTeams.length; i++) TeamPlayers[PlayerTeams[i]].push(i);
+				            
+			            $('NumTeams').value = Teams.length;
+			
+			            adjustTable($('NumTeams'));
+			
+			            for (var i = 0; i < Teams.length; i++) {
+			            	var numPlayers = TeamPlayers[Teams[i]].length;
+			            	
+			            	if (numPlayers > 0) {
+				            	var idTable = 'tblTeamsBody' + (i+1);
+				            	var boxNum = findChildByName($(idTable), "NumTeamPlayers");
+				                boxNum.value = numPlayers;
+				
+				                adjustTable(boxNum);
+			                }
+			            }
+		       		}
+		       	}
+	       	}
+	       	
+			if (rMus !== null && rMus.length > 1) {
+	            var template = $('templateResultsTable');
+	            var idTable = 'tblResultsTable';
+	            
+	            var table = createTable(template, idTable, template.parentNode)
+	       		
+	            var trh1 = $(template.id.replace("Table", "Header1"));
+	            var trh2 = $(template.id.replace("Table", "Header2"));
+	            var trb = $(template.id.replace("Table", "Body"));
+	
+	            var TRH1 = trh1.cloneNode(true);
+	            TRH1.id = trh1.id.replace("template", "tbl");
+	            TRH1.className = trh1.className;
+	            TRH1.style = trh1.style;
+	            table.appendChild(TRH1);
+	
+	            var TRH2 = trh2.cloneNode(true);
+	            TRH2.id = trh2.id.replace("template", "tbl");
+	            TRH2.className = trh2.className;
+	            TRH2.style = trh2.style;
+	            table.appendChild(TRH2);
+	            
+	            for (i = 0; i < Players.length; i++) {
+	                var TRB = trb.cloneNode(true);
+	                TRB.id = trb.id.replace("template", "tbl");
+	                TRB.className = trb.className;
+	                TRB.style = trb.style;
+	                
+	                TRB.innerHTML = TRB.innerHTML.replace('%Name%', Players[i]) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%oldMu%', Mus[i]) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%oldSigma%', Sigmas[i]) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%oldEta%', Etas[i]) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%newMu%', rMus[i]) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%newSigma%', rSigmas[i]) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%newEta%', rEtas[i])                         	                        	
+	                TRB.innerHTML = TRB.innerHTML.replace('%deltaMu%', rMus[i]-parseFloat(Mus[i])) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%deltaSigma%', rSigmas[i]-parseFloat(Sigmas[i])) 
+	                TRB.innerHTML = TRB.innerHTML.replace('%deltaEta%', rEtas[i]-parseFloat(Etas[i]))                         	                        	
+	                	
+	                table.appendChild(TRB);                    	
+	            }
+	            
+	            table.style.display = 'block';
+	            $('divResults').style.display = 'block';
+	            window.location.href = '#Results';
+	       	}
+	    }
+	
+	    function createTable(template, id, placein) {
+	        var table = document.createElement('table');
+	        table.id = id;
+	        table.className = template.className;
+	        table.style = template.style;
+	
+	        placein.appendChild(table);
+	
+	        return table;
+	    }
+	
+	    function drawTable(template, rows, placein, rowno, rowname, minrows) {
+	        var idTable = template.id.replace("template", "tbl");
+	        if (typeof rowno !== 'undefined') idTable = idTable + rowno;
+	
+	        var tableExists = $(idTable) !== null;
+	
+	        if (tableExists) {
+	            table = $(idTable);
+	        } else if (rows > 0) {
+	            table = createTable(template, idTable, placein);
+	            tableExists = true;
+	        }
+	
+	        var trd = $(template.id.replace("Table", "Detail"));
+	
+	        var rowsNeeded = (trd === null ? rows : 2*rows) + 1;
+	        var rowsPresent = table.rows.length;
+	
+	        if (rowsNeeded < rowsPresent) {
+	            var rem = rows <= 1 ? rowsPresent : rowsPresent - rowsNeeded;
+	            for (i = 0; i < rem; i++) {
+	                table.deleteRow(-1);
+	            }
+	        } else if (rowsNeeded > rowsPresent) {
+	            var th = $(template.id.replace("Table", "Header"));
+	            var trb = $(template.id.replace("Table", "Body"));
+	
+	            if (rowsPresent === 0) {
+	                var TH = th.cloneNode(true);
+	                TH.id = th.id.replace("template", "tbl");
+	                TH.className = th.className;
+	                TH.style = th.style;
+	
+	                table.appendChild(TH);
+	                rowsNeeded--;
+	            }
+	
+	            var add = rowsNeeded - rowsPresent;
+	            var rowLast = rowsPresent === 0 ? 1 : rowsPresent;
+	            if (trd !== null) {
+	                add = add / 2;
+	                rowLast = rowLast === 1 ? 1 : (rowsPresent + 1) / 2;
+	            }
+	
+	            for (i = 0; i < add; i++) {
+	                var rowid = (rowno === '' ? '' : (rowno + '.')) + (rowLast + i);
+	
+	                var TRB = trb.cloneNode(true);
+	                TRB.id = trb.id.replace("template", "tbl") + rowid;
+	                TRB.className = trb.className;
+	                TRB.style = trb.style;
+	
+	                fixChildren(TRB, true, rowno, rowid, rowname);
+	
+	                table.appendChild(TRB);
+	
+	                if (trd !== null) {
+	                    var TRD = trd.cloneNode(true);
+	                    TRD.id = trd.id.replace("template", "tbl") + (i + 1);
+	
+	                    var TCDid = trd.id.replace("template", "tbl") + "Cell" + (i + 1);
+	                    TRD.children[0].id = TCDid;
+	
+	                    table.appendChild(TRD);
+	                }
+	            }
+	
+	            if (minrows === undefined) minrows = 2;
+	            table.style.display = rows < minrows ? 'none' : 'block';
+	        }
+	    }
+	
+	    function OnRowcountChange(event) { adjustTable(event.target); }
+	
+	    function adjustTable(element) {
+	        var td = getParent(element, "TD");
+	        var tr = getParent(td, "TR");
+	        var tableControl = getParent(tr, "TABLE");
+	
+	        var mapTemplate = {"tblIndividualPlay":"templatePlayersTable", "tblTeamPlay":"templateTeamsTable", "tblTeamsTable":"templateTeamPlayersTable"};
+	
+	        var idTemplate = mapTemplate[tableControl.id];
+	        var idTable = idTemplate.replace("template","tbl");
+	
+	        var template = $(idTemplate);
+	        var table = $(idTable);
+	
+	        var hasVisibilityControl = (tableControl.id === "tblTeamsTable");
+	
+	        var placein;
+	        var rowname;
+	        if (hasVisibilityControl) {
+	            idTable = idTable + getRowId(tr.id);
+	            table = $(idTable);
+	
+	            placein = $(tr.id.replace("Body","DetailCell"));
+	
+	            var rownamecontainer = findChildByName(tr, 'Teams');
+	            if (rownamecontainer !== undefined) rowname = rownamecontainer.value;
+	        } else {
+	            placein = template.parentNode;
+	        }
+	
+	        var text = element.value;
+	        var intMatches = text.match(/^\d+$/);
+	
+	        if (intMatches === null) {
+	            table.style.display = 'none';
+	            element.value = "Please enter a whole number.";
+	        } else {
+	            var val = Number(intMatches[0]);
+	            if (val === 0) {
+	                drawTable(template, 0, placein);
+	            } else {
+	                if (hasVisibilityControl) isVisible(tr, true);
+	                drawTable(template, val, placein, getRowId(tr.id), rowname, hasVisibilityControl ? 1 : 2);
+	            }
+	        }
+	    }
+	
+	    function showhideTeamPlayers(event) {
+	        var checked = event.target.checked;
+	        var rowTeam = getParent(event.target,"TR");
+	        var numTeam = getRowId(rowTeam.id);
+	        var idTeamPlayers = "tblTeamPlayersTable" + numTeam;
+	        var tblTeamPlayers = $(idTeamPlayers);
+	
+	        if (tblTeamPlayers !== null) {
+	            tblTeamPlayers.style.display = (checked ? 'block' : 'none');
+	        }
+	    }
+	
+	    function switchMode(event) {
+	        if ($('divIndividualPlay').style.display === 'block') {
+	            $('divIndividualPlay').style.display = 'none';
+	            $('divTeamPlay').style.display = 'block';
+ 	            fixChildren($('divTeamPlay'), true);
+	            fixChildren($('divIndividualPlay'), false);
+	        } else {
+	            $('divIndividualPlay').style.display = 'block';
+	            $('divTeamPlay').style.display = 'none';
+	            fixChildren($('divIndividualPlay'), true);
+	            fixChildren($('divTeamPlay'), false);
+	        }
+	    }
+	
+	    function cleanForm(event) {
+	    	if ($('divIndividualPlay').style.display === 'block') 
+	    		fixChildren($('divTeamPlay'), false); 
+	    	if ($('divTeamPlay').style.display === 'block') {
+	            fixChildren($('divIndividualPlay'), false);
+	            copyTeamNameDown($('divTeamPlay'));
+	        }
+	    }
+	
+	    function newTeamName(event) {
+	        var name = event.target.value;
+	        var row = getParent(event.target, "TR");
+	        var nextrow = row.nextSibling;
+	        copyTeamNameDown(nextrow, name);
+	    }
+	
+	    function isVisible(row, checkthebox) {
+	        var chkShowTeamPlayers = findChildByName(row,'ShowTeamPlayers');
+	        if (checkthebox !== 'undefined') chkShowTeamPlayers.checked = checkthebox;
+	        return ((chkShowTeamPlayers !== null) && chkShowTeamPlayers.checked);
+	    }
+	
+	    function copyTeamNameDown(element, name) {                
+	        if (element.type === 'hidden') {
+	            if (name === undefined) element.value = element.value.replace(/%(.*?)%/, '$1');
+	            else element.value = element.value.replace(/%.*?%/, '%'+name+'%');
+	       }
+	
+	       var children = element.children;
+	       for (var i = 0; i < children.length; i++)
+	           copyTeamNameDown(children[i], name);
+	    }
+	
+	    function fixChildren(of, enable, rowno, valNum, valName) {
+	    	if ((/^template/).test(of.id)) return;
+	    	
+	        of.disabled = (enable === undefined) ? true : !enable;
+	        
+	        if (rowno !== undefined) {        
+		        if (~of.id.indexOf('TeamPlayersBody')) {
+		            var boxNameT = findChildByName(of, "PlayerTeams");
+		            var boxNameP = findChildByName(of, "Players");
+		            var boxMu = findChildByName(of, "Mus");
+		            var boxSigma = findChildByName(of, "Sigmas");
+		            var boxWeight = findChildByName(of, "Weights");
+		
+		            var pIndex = (valName in TeamPlayers && (getRowId(valNum)-1) in TeamPlayers[valName]) ? TeamPlayers[valName][getRowId(valNum)-1] : undefined;
+		                                
+		            boxNameT.value = pIndex === undefined || pIndex > PlayerTeams.length ? boxNameT.value : PlayerTeams[pIndex];
+		            boxNameP.value = pIndex === undefined || pIndex > Players.length ? boxNameP.value : Players[pIndex];
+		            boxMu.value = pIndex === undefined || Mus === null || pIndex > Mus.length ? {{GameInfo.iMu}} : Mus[pIndex];
+		            boxSigma.value = pIndex === undefined || Sigmas=== null  || pIndex > Sigmas.length ? {{GameInfo.iSigma}} : Sigmas[pIndex];
+		            boxWeight.value = pIndex === undefined || Weights === null  || pIndex > Weights.length ? 1 : Weights[pIndex];
+		        }
+		        else if (~of.id.indexOf('PlayersBody')) {
+		            var rank = findChildByName(of, "Ranking");
+		            var player = findChildByName(of, "Players");
+		            var mu = findChildByName(of, "Mus");
+		            var sigma = findChildByName(of, "Sigmas");
+		            var weight = findChildByName(of, "Weights");
+		
+		            rank.value = Ranking === null ? valNum : (valNum > Ranking.length ? valNum : Ranking[valNum-1]);
+		            player.value = valNum > Players.length ? player.value : Players[valNum-1];
+		            mu.value = valNum > Mus.length ? mu.value : Mus[valNum-1];
+		            sigma.value = valNum > Sigmas.length ? sigma.value : Sigmas[valNum-1];
+		            weight.value = Weights === null ? 1 : (valNum > Weights.length ? 1 : Weights[valNum-1]);
+		        }
+		        else if  (~of.id.indexOf('TeamsBody')) {
+		            var rank = findChildByName(of, "Ranking");
+		            var team = findChildByName(of, "Teams");
+		
+		            rank.value = Ranking === null ? valNum : (valNum > Ranking.length ? valNum : Ranking[valNum-1]);
+		            team.value = valNum > Teams.length ? team.value : Teams[valNum-1];
+		        }
+		
+		        if (valNum  !== undefined && of.value !== undefined) of.value = of.value.replace('#', valNum);
+		        if (valName !== undefined && of.type === 'hidden') of.value = of.value.replace(/%.*?%/, '%'+valName+'%');
+	        }
+	
+	        var children = of.children;
+	        for (var i = 0; i < children.length; i++)
+	            fixChildren(children[i], enable, rowno, valNum, valName);
+	    }
+	
+	    function findChildByName(element, name) {
+	        if (element.name !== undefined && element.name === name) return element;
+	
+	        var children = element.children;
+	        for (var i = 0; i < children.length; i++)
+	        {
+	            var result = findChildByName(children[i], name);
+	            if (result !== undefined) return result;
+	        }
+	    }
+	
+	    function getParent(of, type) {
+	        var parent = of;
+	        do {
+	            parent = parent.parentNode;
+	        } while (parent.tagName !== type && parent !== document);
+	        return parent;
+	    }
+	
+	    function getRowId(of) {
+	        var matches = of.match(/^(.*?)(\d*)$/);
+	        return matches === null ? null : matches[2];
+	    }
+	
+	    function $(id) {
+	        return document.getElementById(id);
+	    }
+	</script>
+</head>
+<body onload="autoexec()">
+    <h1>TrueSkill Server</h1>
+    <p>[<a href="/">Home</a>] [<a href="help.html">Help</a>] [<a href="credits.html">Credits</a>]</p>
+    <form id="MatchInfoForm" action="/" method="get" onSubmit="cleanForm(event);">
+        <h2>Game Info</h2>
+	        <table>
+	            <tr><td class="label">Initial Mean (µ<sub>0</sub>):</td><td><input type="text" class="Number" id="iMu" name="iMu" value="{{GameInfo.iMu}}"/></td></tr>
+	            <tr><td class="label">Initial Standard Deviation (σ<sub>0</sub>):</td><td><input type="text" class="Number" id="iSigma" name="iSigma" value="{{GameInfo.iSigma}}"/></td></tr>
+	            <tr><td class="label">Skill Factor (ß):</td><td><input type="text" class="Number" id="Beta" name="Beta" value="{{GameInfo.Beta}}"/></td></tr>
+	            <tr><td class="label">Dynamics Factor (τ):</td><td><input type="text" class="Number" id="Tau" name="Tau" value="{{GameInfo.Tau}}"/></td></tr>
+	            <tr><td class="label">Draw Probability (p):</td><td><input type="text" class="Number" id="pDraw" name="pDraw" value="{{GameInfo.pDraw}}"/></td></tr>
+	            <tr><td class="label">Delta (δ):</td><td><input type="text" class="Number" id="Delta" name="Delta" value="{{GameInfo.Delta}}"/></td></tr>
+	         </table>
+
+        <h2>Game Results</h2>
+
+            <!-- Individual Play Block -->
+
+            <div id="divIndividualPlay">
+                <table id="tblIndividualPlay">
+                    <tr>
+                        <td class="label" style="text-wrap:none">Number of players:</td>
+                        <td><input type="text" class="Number" id="NumPlayers" onchange="OnRowcountChange(event)"/></td>
+                        <td class="note"><a id="btnUseTeamPlay" onclick="switchMode()">Switch to Team Play Form</a></td>
+                    </tr>
+                </table>
+
+                <table class="players" id="templatePlayersTable" style="display:none">
+                    <tr id="templatePlayersHeader">
+                        <th>Place</th>
+                        <th>Name</th>
+                        <th>Mean (µ)</th>
+                        <th>Standard Deviation (σ)</th>
+                        <th>Partial Play Weighting (ω)</th>
+                    </tr>
+                    <tr id="templatePlayersBody">
+                        <td><input type="text" class="Number" name="Ranking" value="#" disabled/></td>
+                        <td><input type="text" class="String" name="Players" value="Player #" disabled/></td>
+                        <td><input type="text" class="Number" name="Mus" value="{{GameInfo.iMu}}" disabled/></td>
+                        <td><input type="text" class="Number" name="Sigmas" value="{{GameInfo.iSigma}}" disabled/></td>
+                        <td><input type="text" class="Number" name="Weights" value="1" disabled/></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Team Play Block -->
+
+            <div id="divTeamPlay">
+                <table id="tblTeamPlay">
+                    <tr>
+                        <td class="label">Number of teams:</td>
+                        <td><input type="text" class="Number" id="NumTeams" onchange="OnRowcountChange(event)"/></td>
+                        <td class="note"><a id="btnUseIndividualPlay" onclick="switchMode()">Switch to Individual Play Form</a></td>
+                    </tr>
+                </table>
+
+                <table class="team" id="templateTeamsTable" style="display:none">
+                    <tr id="templateTeamsHeader">
+                        <th>Place</th>
+                        <th>Team</th>
+                        <th>Number of Players</th>
+                        <th>Show Players</th>
+                        <th class="greedy"></th>
+                    </tr>
+                    <tr id="templateTeamsBody">
+                        <td><input type="text" class="Number" name="Ranking" value="#" disabled/></td>
+                        <td><input type="text" class="String" name="Teams" value="Team #" onchange="newTeamName(event)" disabled/></td>
+                        <td><input type="text" class="Number" name="NumTeamPlayers" onchange="OnRowcountChange(event)" disabled/></td>
+                        <td><input type="checkbox" name="ShowTeamPlayers" onchange="showhideTeamPlayers(event)" disabled/></td>
+                        <td class="greedy"></td>
+                    </tr>
+                    <tr id="templateTeamsDetail">
+                        <td colspan="5" id="templateTeamsDetailCell"></td>
+                    </tr>
+                </table>
+
+                <table class="teamplayers" id="templateTeamPlayersTable" style="display:none">
+                    <tr id="templateTeamPlayersHeader">
+                        <th>Name</th>
+                        <th>Mean (µ)</th>
+                        <th>Standard Deviation (σ)</th>
+                        <th>Partial Play Weighting (ω)</th>
+                    </tr>
+                    <tr id="templateTeamPlayersBody">
+                        <td><input type="hidden" name="PlayerTeams" value="%name%" disabled/>
+                            <input type="text" class="String" name="Players" value="Player #" disabled/></td>
+                        <td><input type="text" class="Number" name="Mus" value="{{GameInfo.iMu}}" disabled/></td>
+                        <td><input type="text" class="Number" name="Sigmas" value="{{GameInfo.iSigma}}" disabled/></td>
+                        <td><input type="text" class="Number" name="Weights" value="1" disabled/></td>
+                    </tr>
+                </table>
+             </div>
+
+		<p>
+	        <input type="submit" id="btnCalculateNewRatings" value="Calculate New Ratings">
+	        <input type="hidden" name="Go" value="true">
+        </p>         
+    </form>
+    
+    <!--  Results Block -->
+
+	<a name="Results"></a>
+    <div class="Error" id="divError" style="display:none"></div>
+  	<div class="results" id="divResults" style="display:none">
+		<h2>Updated TrueSkill Ratings</h2>
+
+	        <table class="results" id="templateResultsTable" style="display:none">
+	            <tr id="templateResultsHeader1">
+	                <th></th>
+	                <th class="results" colspan="3" style="text-align: center;">Old</th>
+	                <th class="results" colspan="3" style="text-align: center;">New</th>
+	                <th class="results" colspan="3" style="text-align: center;">Change</th>
+	            </tr>
+	            <tr id="templateResultsHeader2">
+	                <th class="results">Name</th>
+	                <th class="results">Mean (µ)</th>
+	                <th class="results">Standard Deviation (σ)</th>
+	                <th class="results">Teeth (η)</th>
+	                <th class="results">Mean (µ)</th>
+	                <th class="results">Standard Deviation (σ)</th>
+	                <th class="results">Teeth (η)</th>
+	                <th class="results">Mean (µ)</th>
+	                <th class="results">Standard Deviation (σ)</th>
+	                <th class="results">Teeth (η)</th>
+	            </tr>
+	            <tr id="templateResultsBody">
+	                <td class="results">%Name%</td>
+	                <td class="results">%oldMu%</td>
+	                <td class="results">%oldSigma%</td>
+	                <td class="results">%oldEta%</td>
+	                <td class="results">%newMu%</td>
+	                <td class="results">%newSigma%</td>
+	                <td class="results">%newEta%</td>
+	                <td class="results">%deltaMu%</td>
+	                <td class="results">%deltaSigma%</td>
+	                <td class="results">%deltaEta%</td>
+	            </tr>
+	        </table>            
+    </div>    
+</body>
+</html>

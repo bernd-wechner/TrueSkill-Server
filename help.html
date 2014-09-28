@@ -1,0 +1,509 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="stylesheet" href="default.css" type="text/css">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Help: TrueSkill Server</title>
+  <script type="text/javascript">
+     function example(args) { 
+         document.write('<a href="' + location.protocol + '//' + location.host + args + '">' + location.protocol + '//' + location.host + args + '</a>');
+     }
+  </script>
+</head>
+
+<body>
+<h1>Using the TrueSkill Server</h1>
+
+<p>[<a href="/">Home</a>] [<a href="credits.html">Acknowledgements</a>]</p>
+
+<p>TrueSkill is one of the most lauded methods of rating an ranking game
+players developed to date.<br>
+</p>
+
+<p>This TrueSkill server provides access to the TrueSkill updates via either a
+form entry or URL.</p>
+
+<p>In either instance understanding the TrueSkill parameters will be
+essential.</p>
+
+<h2>TrueSkill Parameters</h2>
+
+<p>TrueSkill models a players skill with two distinct parameters, each of which
+is measured in arbitrary units we can call skill points:</p>
+<ul>
+  <li>A mean (µ) - which represents an estimate of the skill the player has.
+    The higher the mean the more skilled the player is judged to be, the lower
+    the mean the less skilled.</li>
+  <li>A standard deviation (σ) - which represents an estimate of the
+    uncertainty surrounding that skill. The higher the standard deviation the
+    less sure we are, the lower the more sure. It is the opposite of
+  confidence.</li>
+</ul>
+
+<p>The beauty and importance of this is that TrueSkill starts everyone off with
+a given measure of skill (mean, µ) and high uncertainty (standard deviation,
+σ).</p>
+
+<p>Every player is given the same initial value of mean and standard deviation
+and each time a game is recorded, the means are adjusted standard deviations
+will drop (confidence rises). Specifically TrueSkill will take points away from
+the losers and given to the winners so that they total number of points among
+all players in a game remains the same. These are labelled:</p>
+<ul>
+  <li>An initial mean (µ<sub>0</sub>) - being the initial value of the mean
+    (µ) assigned to each player (before any game data is collected to measure
+    their performance).</li>
+  <li>An initial standard deviation (σ<sub>0</sub>) - being the initial value
+    of standard deviation (σ) assigned to each player (before any game data is
+    collected to measure their performance).</li>
+</ul>
+
+<p>A third number is associated with each player, which is a conservative
+measure of skill. The mean (µ) is a measure of the presumed skill, but the
+standard deviation (σ) describes how uncertain we are about that. The
+conservative measure of skill then is calculated as a single number from the
+mean and standard deviation. This is the single number used for ranking players
+and comparing their skill level and represents the level of skill we are
+confident they have, at least. It could be higher, and the more games they play
+the lowert the standard deviation will fall as uncertainty drops and confidence
+rises.</p>
+
+<p>This TrueSkill server defines the conservative skill measure as:</p>
+<ul>
+  <li>Number of teeth (η) = µ − (µ<sub>0</sub> ÷ σ<sub>0</sub>) ×
+  σ</li>
+</ul>
+
+<p>The number of teeth at outset is thus by definition, 0:</p>
+<ul>
+  <li>Initial number of teeth (η<sub>0</sub>) =
+    µ<sub>0</sub>−(µ<sub>0</sub> ÷ σ<sub>0</sub>) × σ<sub>0</sub> =
+    µ<sub>0</sub> −µ<sub>0</sub> = 0</li>
+</ul>
+
+<p>With this understanding you can now interpret all of the TrueSkill
+parameters.</p>
+
+<p style="margin-left:2em"><strong>Side note:</strong> The TrueSkill
+documentation never gives this conservative measure of skill a name or symbol,
+but loosely implies it is called the true skill. This server was developed
+specifically as a first step towards supporting leaderboard rankings for a
+competitive gamers group called CoGs (for <strong>Co</strong>mpetitive
+<strong>G</strong>amer<strong>s</strong>), and so true skill is measured in
+teeth (cogs have teeth) alluding also to the voracity of any given player (like
+the teeth of a lion) and the Greek symbol eta (η) chosen as intional pun on
+teeth (eater) and conveniently resembling the letter n (for number of
+teeth).</p>
+
+<h3>Player Parameters (for a given game result)</h3>
+
+<p>These parameters are specific to the the players (and/or teams) playing the
+game.</p>
+
+<table class="deflist" width="80%">
+  <tbody>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Place</td>
+      <td class="deflist">A number indicating the placing. The first player
+        would be 1, the second 2, the third 3 etc. Ties can be entered so if
+        two players tied in second place for example they would both have a
+        Place of 2. The actual number is not relevant to the TrueSkill
+        calculation, players are simply sorted by Place to determine who beat
+        whom. The winners taking points away from the losers respectively.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Name</td>
+      <td class="deflist">The name of the player. Each player must have a
+        unique name but otherwise, it's not relevant to the TrueSkill
+        calculation excepting that the results are listed by name again. This
+        is your identifier for each player. </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Mean (µ)</td>
+      <td class="deflist">The current mean (as described above) which the
+        player has before the game you're recording was played. TrueSkill will
+        undertake to calculate a new mean based on this players placing in the
+        game.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Standard Deviation (σ)</td>
+      <td class="deflist">The current standard deviation (as described above)
+        which the player has before the game you're recording was played.
+        TrueSkill will undertake to calculate a new standard deviation based on
+        the game parametes you specified.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Partial Play Weighting (ω)</td>
+      <td class="deflist">A weighting for partial play. Let's say a given
+        player could not play the game to completion because the wife called
+        and was having a baby. Well, you can estimate what portion of the game
+        they did play and this will moderate how much TrueSkill adjusts their
+        mean and standard deviation results. The default of 1, is playing to
+        completion, 0 in turn means they didn't even start, their mean and
+        standard deviation won't be touched, why are you enterig them at all?
+        And 0.5 would mean they played for half the game, 0.75,
+        <sup>3</sup>/<sub>4</sub> of the game and 0.25,
+        <sup>1</sup>/<sub>4</sub> of the game and so on.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Team Play</h4>
+
+<p>TrueSkill supports team play (in fact individual play is just modelled as
+teams of 1 internally). In which case there is Place and Name for each team,
+and each player has a Name but no Place. In other words all the players in one
+team score together the same placing. </p>
+
+<h3>Game Parameters</h3>
+
+<p>These parameters are specific to the game being played. Each game will have
+it's own unique set of parameters, though TrueSkill provides some convenient
+defaults.</p>
+
+<table class="deflist" width="80%">
+  <tbody>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Initial Mean (µ<sub>0</sub>)</td>
+      <td class="deflist">The initial value of the mean as described above. The
+        default value in TrueSkill is 25 points. This is completely arbitrary
+        and you coulduse any value. Important only is that for any given game,
+        league or leaderboard you are managing that all players who enter do so
+        with the same initial mean - to be consistent and fair.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Initial Standard Deviation
+        (σ<sub>0</sub>)</td>
+      <td class="deflist">The initial value of the standard deviation as
+        descrived above. 
+
+        <p>The default value is one third of the initial mean, or 25 ÷ 3,
+        which is 8<sup>1</sup>/<sub>3</sub> or 8.333... if you prefer. </p>
+
+        <p>This is a completely arbitrary but a value that worked empirically
+        for the TrueSkill developers in their initial environment (the Xbox
+        matchmaking system). </p>
+
+        <p>You can use any value you like, but the server constrains you to use
+        one that is not greater than the initial mean (said another way, let us
+        not begin with uncertainty greater than the measure).</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Skill Factor (ß)</td>
+      <td class="deflist">Technically defined as the difference in µ values
+        that would map to approximately 80% chance of the higher µ holder of
+        winning. Meaning: The higher ß is the more µ will move in response to
+        new data, and the lower it is the less µ will move. Seen another way
+        it defines the spread in points between players of a given skill
+        difference. The higher ß is the more widely spread in point values,
+        players will be, and the lower ß is the less widely spread. 
+
+        <p>The default value is one sixth of the initial mean, or 25 ÷ 6,
+        which is 4<sup>1</sup>/<sub>6</sub> or 4.166... if you prefer. </p>
+
+        <p>This again is completely arbitrary but a value that worked
+        empirically for the TrueSkill developers in their initial environment
+        (the Xbox matchmaking system). </p>
+      </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Dynamics Factor (τ)</td>
+      <td class="deflist">Strangely named, because the Dynamics Factor (τ) is
+        actually used to describe the role that skill, vs,. luck has to play in
+        the game you are playing. 
+
+        <p>With each new game played, TrueSkill will modify the mean and
+        standard deviation, as described above, adjusting the mean to reflect
+        the placings achieved in the game you just played, and shrinking the
+        standard deviation with each game played. The more games you play the
+        more confident we can be that average points assigned to you (µ) are
+        accurate.</p>
+
+        <p>Left alone TrueSkill will bring the standard deviation closer and
+        closer to 0 with every game you play, getting more and more confident.
+        </p>
+
+        <p>The Dynamics Factor (τ) is a measure of residual uncertainty in
+        this process. It is added to the standard deviation (σ) on each
+        update. Thus the higher τ is, the less confidence in and given µ
+        there is and the lower τ is the more confidence in any given µ there
+        is.</p>
+
+        <p>The default value in TrueSkill is one hundredth of the initial
+        standard deviation (σ<sub>0</sub>), or 25 ÷ 3 ÷ 100, which is about
+        0.08333...</p>
+
+        <p>As a guideline the greater the role luck plays in a game the higher
+        τ should be, and the greater the role skill has to play, the lower τ
+        should be. So chess would have a very low τ, and blackjack a very high
+        value of τ. Alas the TrueSkill authors provide no guidance here, and
+        the default value is one they chose that empirically worked well in the
+        Xbox community. </p>
+
+        <p>It would be a good idea, to independently keep on record all game
+        results when using the TrueSkill server, so that you could recalculate
+        ratings from scratch given the entire game history of a particular
+        game, league or leader board, and thus if ever concerned about how well
+        TrueSkill is modelling skill, you could recalculate ratings by running
+        each played game through the server once again with a different game
+        parameter, like τ.</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Draw Probability (p)</td>
+      <td class="deflist">The probability (0 to 1, meaning 0% to 100%) of a
+        draw occurring in this game. 
+
+        <p>This affects the interpretation of draws by TrueSkill. In essence if
+        a draw is recorded between two or more players TrueSkill will tend to
+        move their means (µ) toward each other. If a draw is very likely
+        however, this result says little about the individual player skills,
+        and the adjustment to µ will be lower, and if the a draw is very
+        unlikely then scoring a draw suggest much more strongly that the
+        players are well matched and the adjustment to µ is accordingly
+        higher.</p>
+
+        <p>The default value is 0.1 (or 10%) which is completely arbitrary.</p>
+
+        <p>You can of course, with enough game data recorded measure the
+        probability of a draw in retrospect. This another reason to
+        independently keep on record all game results, so that you could if
+        desired, recalculate all rantings by running each played game through
+        the server once again with a different draw probability.</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Delta (δ)</td>
+      <td class="deflist">Delta is the convergence parameter. TrueSkill runs
+        itself in circles adjusting players µ and σ values trying to find
+        values that best predict the recorded outcome. The smaller δ is the
+        longer it will take but more accurate the result will be, and the
+        higher δ is the faster the calculation and the less accurate the
+        result will be. 
+
+        <p>The default value is 0.0001, an arbitrarily small value.</p>
+
+        <p>Not likely you'll need to play with this, but you can experiment.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Using the Form</h2>
+
+<p>The form should be fairly self explanatory. It is simple and asks you to
+enter the game, player (and/or) team parameters, after which you can click
+<strong>Calculate New Ratings</strong> to produce results.</p>
+
+<p>Things to note when using the form:</p>
+<ul>
+  <li><strong>Game Info</strong> is where you enter the game parameters
+    described above. All boxes are initialised with the TrueSkill defaults or
+    values passed through the URL, see <a href="#URL">Using the URL</a>
+  below.</li>
+  <li><strong>Game Results</strong> is where you enter the player (and/or team)
+    parameters described above. 
+    <ul>
+      <li>You will need to choose either the <strong>Individual Player
+        Form</strong> or the <strong>Team Play Form</strong>. Individual Play
+        is the default.</li>
+      <li>In either case you will need to enter the number of player or teams.
+        A link beside this box switches forms.</li>
+      <li>Once you enter the number of players or teams one row per player or
+        team appears in which to enter the player and team parameters described
+        above.</li>
+      <li>All boxes are initialised with the TrueSkill defaults or values
+        passed through the URL, see <a href="#URL">Using the URL</a> below.</li>
+    </ul>
+  </li>
+  <li>Once all the game and player (and/or team parameters) are set, click
+    <strong>Calculate New Ratings</strong> to produce results. 
+    <ul>
+      <li>This will conveniently also produce the URL which you can use to
+        bookmark this calculation and/or use later to perform the calculation
+        without the form, but <a href="#URL">using the URL</a>.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2><a name="URL"></a>Using the URL</h2>
+
+<p>As a web service the TrueSkill server is designed to feed results to a
+client in a convenient format. </p>
+
+<p>URL parameters can be set to define any or all the TrueSkill parameters
+above and request a calculation and/or the format of the results desired.</p>
+
+<p>Parameters are as follows:</p>
+
+<table class="deflist" width="80%">
+  <thead>
+    <tr>
+      <th class="deflist" nowrap="nowrap" style="font-size: large">URL
+      Parameter</th>
+      <th class="deflist" style="font-size: large">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="deflist" colspan="2"><strong>Game Info Parameters</strong></td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">iMu</td>
+      <td class="deflist">Initial Mean (µ<sub>0</sub>)</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">iSigma</td>
+      <td class="deflist">Initial Standard Deviation (σ<sub>0</sub>)</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Beta</td>
+      <td class="deflist">Skill Factor (ß)</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Tau</td>
+      <td class="deflist">Dynamics Factor (τ)</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">pDraw</td>
+      <td class="deflist">Draw Probability (p)</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Delta</td>
+      <td class="deflist">Delta (δ)</td>
+    </tr>
+    <tr>
+      <td class="deflist" colspan="2"><strong>Game Results Parameters</strong> 
+
+        <p>Each of these may be specified as a comma separated list or as a
+        list of parameters or a combination thereof. If the parameter is
+        repeated all repeat entries are joined with a comma in between them
+        before  further processing. So that these are all identical in
+        effect:</p>
+
+        <p style="margin-left:2em;">?Players=Jack,Jill,Bonnie,Clyde </p>
+
+        <p
+        style="margin-left:2em;">?Players=Jack&amp;Players=Jill&amp;Players=Bonnie&amp;Players=Clyde
+        </p>
+
+        <p style="margin-left:2em;">?Players=Jack,Jill&amp;Players=Bonnie,Clyde
+        </p>
+
+        <p></p>
+      </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Players</td>
+      <td class="deflist">A comma separated list of player names. </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Ranking</td>
+      <td class="deflist">A comma separated list of of rankings (places), which
+        maps 1 to 1 to the list of Players in the same order.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Mus</td>
+      <td class="deflist">A comma separated list of of means (μ<span
+        style="font-size: smaller">s</span>), which maps 1 to 1 to the list of
+        Players in the same order.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Sigmas</td>
+      <td class="deflist">A comma separated list of of sigmas (σ<span
+        style="font-size: smaller">s</span>), which maps 1 to 1 to the list of
+        Players in the same order.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Weights</td>
+      <td class="deflist">A comma separated list of of weights (ω<span
+        style="font-size: smaller">s</span>), which maps 1 to 1 to the list of
+        Players in the same order.</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Teams</td>
+      <td class="deflist">Optionally, if Team Play is in effect. 
+
+        <p>A comma separated list of of team names. </p>
+      </td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">PlayerTeams</td>
+      <td class="deflist">Optionally, if Team Play is in effect. 
+
+        <p>A comma separated list of of team names, which maps 1 to 1 to the
+        list of Players in the same order and which maps each player into one
+        of the teams listed in the Teams parameter.</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="deflist" colspan="2"><strong>Control Parameters</strong></td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Go</td>
+      <td class="deflist">If present and set to true, yes or 1, will cause an
+        immediate TrueSkill calculation to be performed and results presented.
+        The equivalent of clicking Calculate New Ratings on the form</td>
+    </tr>
+    <tr>
+      <td class="deflist" nowrap="nowrap">Format</td>
+      <td class="deflist">If present can specify a format to present the
+        results in: 
+        <dl>
+          <dt style="margin-left:2em;">CSV</dt>
+            <dd>A comma separated list of results is returned. For simple
+              parsing by a client, and/or viewing in any CSV viewer like a
+              spreadsheet. A header line is included.<br>
+              <br>
+            </dd>
+          <dt style="margin-left:2em;">XML</dt>
+            <dd>An XML version of the results is returned. Again for simple
+              parsing by an XML aware client or viewing in an XML viewer.<br>
+              <br>
+            </dd>
+          <dt style="margin-left:2em;">HTML</dt>
+            <dd>A clean HTML table, without the entry form. Primarily for visual
+              rendering in the browser.</dd>
+        </dl>
+
+        <p>If not specified then the results are displayed after the entry form
+        as an HTML table. </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>URL Examples</h3>
+
+<p>Jill beat Jack, display the form.</p>
+
+<p style="margin-left:2em;"><script type="text/javascript">
+      example('?Players=Jack,Jill&Ranking=2,1');
+</script>
+</p>
+
+<p>Jill beat Jack, calculate results and display them in CSV format.</p>
+
+<p style="margin-left:2em;"><script type="text/javascript">
+      example('?Players=Jack,Jill&Ranking=2,1&Go=1&Format=CSV');
+</script>
+</p>
+
+<p>Two teams, guys versus gals, gals won, calculate results and display in
+form.</p>
+
+<p style="margin-left:2em;"><script type="text/javascript">
+      example('?Teams=Guys,Gals&Players=Jack,Jill,Bill,Ben,Bonnie,Clyde&PlayerTeams=Guys,Gals,Guys,Guys,Gals,Guys&Ranking=2,1&Go=1');
+</script>
+</p>
+
+<p>Same teams but specify players current ratings and some game info.</p>
+
+<p style="margin-left:2em;"><script type="text/javascript">
+      example('?Teams=Guys,Gals&Players=Jack,Jill,Bill,Ben,Bonnie,Clyde&PlayerTeams=Guys,Gals,Guys,Guys,Gals,Guys&Ranking=2,1&Go=1&Mus=26,24,27,28,25,29&Sigmas=5,7,4,3,8,4&Beta=7.5&Tau=2.5&pDraw=0.3');
+</script>
+</p>
+</body>
+</html>

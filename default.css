@@ -1,0 +1,114 @@
+@CHARSET "UTF-8";
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: AliceBlue;    
+}
+
+th {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.greedy {
+    width: 100%;
+}
+
+table.players {
+    margin-left: 50px;
+    width: 0%;
+}
+
+table.team {
+    margin-left: 50px;
+    width: 0%;
+}
+
+table.teamplayers {
+    margin-left: 100px;
+    width: 0%;
+}
+
+table.results {
+    margin-left: 50px;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+th.results {
+    padding: 5px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    border-spacing: 0px;
+}
+
+td.results {
+    padding: 5px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    border-spacing: 0px;
+}
+
+td.label {
+    padding-right: 30px;
+    text-wrap: none;
+}
+
+td.note {
+    padding-left: 30px;
+    text-wrap: none;
+}
+
+.Number {}
+.String {}
+
+div.Error {
+	margin-top: 30px;
+	color: red;
+}
+
+a:link {
+    text-decoration: none;
+    color: blue;
+}
+
+a:visited {
+    text-decoration: none;
+    color: blue;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: blue;
+}
+
+a:active {
+    text-decoration: underline;
+    color: blue;
+}
+
+table.deflist {
+    margin-left: 50px;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+th.deflist {
+    padding: 5px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    border-spacing: 0px;
+    vertical-align: top;
+}
+
+td.deflist {
+    padding: 5px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    border-spacing: 0px;
+    vertical-align: top;
+}
