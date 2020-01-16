@@ -1,0 +1,41 @@
+#!/bin/bash
+# Publish the TrueSkill Server to the webserver
+
+# To mount the router and webserver we need to have SSH access and SSH keys installed
+# as we'll use sshfs to mount them if needed
+rsa_file=~/.ssh/id_rsa
+
+# Web Server properties
+server_name=Arachne
+server_mount_dir=~/Mounts/trueskill.info
+server_account=weaver@arachne.lan
+server_dir=/data/www/trueskill.info
+
+# Ensure the server is properly mounted (or we can't publish to them)
+mountpoint -q $server_mount_dir
+if [ $? != 0 ];then
+	if [ ! -d $server_mount_dir ]; then
+		echo "Creating $server_mount_dir ..."
+	    mkdir -p $server_mount_dir
+	fi
+
+	echo Mounting $server_mount_dir ...
+	sshfs -o IdentityFile=$rsa_file $server_account:$server_dir $server_mount_dir
+fi
+
+# Get the source dir (we expect this script to be in a subdirectory of scripts in the source dir)
+source_dir=$(cd `dirname $0` && pwd)
+
+# Now publish the site
+echo "Copying site to $server_name..."
+# I include a pacthed version of bottle to work around a lighttpd bug: https://redmine.lighttpd.net/issues/3005
+site=(index.py index.html default.css credits.html help.html uwsgi.ini bottle.py)
+for source in ${site[@]}; do
+	rsync -r "$source_dir/$source" "$server_mount_dir"	
+done
+
+# We need to restart the uwsgi service for changes to take effect
+echo "Restarting UWSGI service on $server_name ..."
+ssh -o IdentityFile=$rsa_file $server_account sudo service uwsgi restart
+
+echo "Done."

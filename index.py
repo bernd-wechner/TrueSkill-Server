@@ -1,10 +1,11 @@
+#!/usr/bin/python3
 __host__='localhost'
 __port__=8080
 __root__="."
 __form__="index.html"
 
 from enum import Enum
-from bottle import run, static_file, template, request, response, route
+from bottle import run, static_file, template, request, response, route, default_app
 import trueskill
 import json
 import logging
@@ -277,4 +278,9 @@ def serve_help():
 def serve_credits():
     return static_file("credits.html", __root__)
 
-run(host=__host__, port=__port__)
+if __name__ == "__main__":
+    # Run a simple webserver
+    run(host='localhost', port=8085)
+else:
+    # Inform uWSGI of the app to run
+    app = application = default_app()

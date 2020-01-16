@@ -189,7 +189,16 @@
               you prefer. </p>
             <p>This again is completely arbitrary but a value that
               worked empirically for the TrueSkill developers in their
-              initial environment (the Xbox matchmaking system). </p>
+              initial environment (the Xbox matchmaking system).</p>
+            <p>It turns out they did some subsequent research comparing 
+            actual game outcomes against Trueskill predictions to tune ß.
+            They arrived at the following values as guidelines for Xbox
+            games:</p>
+            <ul>
+            	<li>3.33 for Golf (a game of almost pure skill)</li>
+            	<li>5.00 for Car racing</li>
+            	<li>20.8 for UNO (a game of chance)</li>
+            </ul>
           </td>
         </tr>
         <tr>
@@ -209,6 +218,11 @@
               deviation (σ) on each update. Thus the higher τ is, the
               less confidence in any given µ there is and the lower τ is
               the more confidence in any given µ there is.</p>
+            <p>Technically of course, this might be a reasonable model if
+            most or all players have similar spans between games, i.e. are 
+            consistently playing. If players have very disparate periods of 
+            time between plays it fails in any way to model any difference 
+            in their loss of or our uncertainty in, their skill</p>
             <p>The default value in TrueSkill is one hundredth of the
               initial standard deviation (σ<sub>0</sub>), or 25 ÷ 3 ÷
               100, which is about 0.08333...</p>
@@ -345,14 +359,8 @@
             <p style="margin-left:2em;">?Players=Jack,Jill,Bonnie,Clyde
             </p>
             <p style="margin-left:2em;">?Players=Jack&amp;Players=Jill&amp;Players=Bonnie&amp;Players=Clyde
-
-
-
             </p>
             <p style="margin-left:2em;">?Players=Jack,Jill&amp;Players=Bonnie,Clyde
-
-
-
             </p>
           </td>
         </tr>
