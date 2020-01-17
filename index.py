@@ -270,6 +270,10 @@ def form():
 def serve_css():
     return static_file("default.css", __root__)
 
+@route('/favicon.ico')
+def serve_favicon():
+    return static_file("favicon.ico", __root__)
+
 @route('/help.html')
 def serve_help():
     return static_file("help.html", __root__)

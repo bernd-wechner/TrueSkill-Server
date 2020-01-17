@@ -13,7 +13,7 @@
   <body>
     <h1>Using the TrueSkill Server</h1>
     <p>[<a href="/">Home</a>] [<a href="credits.html">Acknowledgements</a>]</p>
-    <p>TrueSkill is one of the most lauded methods of rating an ranking
+    <p>TrueSkill is one of the most lauded methods of rating and ranking
       game players developed to date.<br>
     </p>
     <p>This TrueSkill server provides access to the TrueSkill updates
@@ -59,15 +59,15 @@
       deviation. This is the single number used for ranking players and
       comparing their skill level and represents the level of skill we
       are confident they have, at least. It could be higher, and the
-      more games they play the lowert the standard deviation will fall
+      more games they play the lower the standard deviation will fall
       as uncertainty drops and confidence rises.</p>
     <p>This TrueSkill server defines the conservative skill measure as:</p>
     <ul>
-      <li>Number of teeth (η) = µ − (µ<sub>0</sub> ÷ σ<sub>0</sub>) × σ</li>
+      <li>Rating (η) = µ − (µ<sub>0</sub> ÷ σ<sub>0</sub>) × σ</li>
     </ul>
-    <p>The number of teeth at outset is thus by definition, 0:</p>
+    <p>The rating at outset is thus by definition, 0:</p>
     <ul>
-      <li>Initial number of teeth (η<sub>0</sub>) = µ<sub>0</sub>−(µ<sub>0</sub>
+      <li>Initial Rating (η<sub>0</sub>) = µ<sub>0</sub>−(µ<sub>0</sub>
         ÷ σ<sub>0</sub>) × σ<sub>0</sub> = µ<sub>0</sub> −µ<sub>0</sub>
         = 0</li>
     </ul>
@@ -75,16 +75,16 @@
       TrueSkill parameters.</p>
     <p style="margin-left:2em"><strong>Side note:</strong> The TrueSkill
       documentation never gives this conservative measure of skill a
-      name or symbol, but loosely implies it is called the true skill.
+      name or symbol, but loosely implies that it is called the true skill.
       This server was developed specifically as a first step towards
       supporting leaderboard rankings for a competitive gamers group
-      called CoGs (for <strong>Co</strong>mpetitive <strong>G</strong>amer<strong>s</strong>),
-
-      and so true skill is measured in teeth (cogs have teeth) alluding
-      also to the voracity of any given player (like the teeth of a
-      lion) and the Greek symbol eta (η) chosen as intentional pun on
-      teeth (eater) and conveniently resembling the letter n (for number
-      of teeth).</p>
+      calling themselves <a href="https://leaderboard.space">CoGs</a> 
+      (for <strong>Co</strong>mpetitive <strong>G</strong>amer<strong>s</strong>),
+      and so true skill is named rating (in the manner of chess ratings) and 
+      measured in teeth (cogs have teeth) alluding also to the voracity of 
+      any given player (like the teeth of a lion) and the Greek symbol eta 
+      (η) chosen as intentional pun on teeth (eater) and conveniently resembling 
+      the letter n (for number of teeth).</p>
     <h3>Player Parameters (for a given game result)</h3>
     <p>These parameters are specific to the the players (and/or teams)
       playing the game.</p>
@@ -314,9 +314,6 @@
     <table class="deflist" width="80%">
       <thead> <tr>
           <th class="deflist" style="font-size: large" nowrap="nowrap">URL
-
-
-
             Parameter</th>
           <th class="deflist" style="font-size: large">Description</th>
         </tr>

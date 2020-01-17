@@ -14,10 +14,11 @@
 <p><a href="http://en.wikipedia.org/wiki/TrueSkill">TrueSkill</a> is a <a
 href="http://en.wikipedia.org/wiki/Bayesian">Bayesian</a> ranking algorithm
 developed by <a href="http://research.microsoft.com/">Microsoft Research</a>
-and used in the <a href="www.xbox.com/live">Xbox Live</a> ranking and
+and used in the <a href="http://www.xbox.com/live">Xbox Live</a> ranking and
 matchmaking service. The algorithm is patented and trademarked by Microsoft.</p>
 
-<p>Microsoft provides two TrueSkill rank calculators on-line:</p>
+<p>Microsoft provided two TrueSkill rank calculators on-line but sdly no more
+(i.e. these links are broken legacy links):</p>
 <ul>
   <li><a
     href="http://boson.research.microsoft.com/trueskill/rankcalculator.aspx">A
@@ -27,8 +28,8 @@ matchmaking service. The algorithm is patented and trademarked by Microsoft.</p>
     AJAX based version</a></li>
 </ul>
 
-<p>Both seem more complicated than is needed, don't support more than 8 players
-and are not apparently intended to provide a server for TrueSkill updates so
+<p>Both seemed more complicated than was needed, didn't support more than 8 players
+and were not apparently intended to provide a server for TrueSkill updates so
 much as demonstrating the algorithm and providing a benchmark for comparison
 against if re-implementing.</p>
 
@@ -47,6 +48,11 @@ common in board gaming culture).</p>
   <li><a href="http://trueskill.org/">Heungsub Lee</a> and his excellent Python
     implementation of TrueSkill (which is used for this server) and personal
     support in implementing the server.</li>
+  <li>Ralf Herbrich for his enduring patience in helping us to understand TrueSkill 
+  better and providing some guidelines for tuned values of the tuning parameneter ß
+  in particular.</li>
+  <li>Tom Minka for his patience and guidance as well in the understanding of 
+  TrueSkill</li>   
 </ul>
 
 <p>This TrueSkill Server is written in Python using the Bottle web framework
@@ -55,7 +61,7 @@ dynamic layout (less than 400 lines of JavaScript and 200 lines of HTML) with
 one small style sheet (under 200 lines) and two support files, one for help and
 another for acknowledgements.</p>
 
-<p>It should run fine on any web server that support Python, pose very light
+<p>It should run fine on any web server that supports Python, poses very light
 resource loading and keeps a log of all requests it serves.</p>
 
 <h2>Disclaimers</h2>
@@ -67,10 +73,19 @@ resource loading and keeps a log of all requests it serves.</p>
 		Jeff Moser's papers and discussing with Heungsub Lee
 	</p>
 
-	<p>The server does not guarantee accurate TrueSkill results and thorough testing and 
-comparison with Microsoft's raters (cited above) is worthwhile but not (yet) 
-conducted,</p>
+	<p>
+		The server does not guarantee accurate TrueSkill results and thorough testing and 
+		comparison with Microsoft's raters (cited above) is worthwhile but not (yet) 
+		conducted.
+	</p>
 
+	<p>
+		Microsoft Research has improved TrueSkill and published 
+		<a href="https://www.microsoft.com/en-us/research/publication/trueskill-2-improved-bayesian-skill-rating-system/">
+		TrueSkill 2</a>. But until someone codes that up in <a href="https://www.python.org/">Python</a>
+		we're unable to offer it here (hint, hint @Heungsub Lee or others). 
+	</p>
+	
 <p></p>
 </body>
 </html>

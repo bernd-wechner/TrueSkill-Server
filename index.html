@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
     <link rel="stylesheet" href="default.css" type="text/css"/>
+	<link rel="icon" href="/favicon.ico"/>    
 	<title>TrueSkill Server</title>
 
 	<script>
@@ -392,7 +393,13 @@
 </head>
 <body onload="autoexec()">
     <h1>TrueSkill Server</h1>
+    
     <p>[<a href="/">Home</a>] [<a href="help.html">Help</a>] [<a href="credits.html">Credits</a>]</p>
+    
+    <p>A very simple 
+    <a href="https://www.microsoft.com/en-us/research/publication/trueskilltm-a-bayesian-skill-rating-system/">
+    TrueSkill</a> server that provides a basic form interface and a URL based <a href="help.html#URL">API</a>.</p>
+    
     <form id="MatchInfoForm" action="/" method="get" onSubmit="cleanForm(event);">
         <h2>Game Info</h2>
 	        <table>
@@ -507,13 +514,13 @@
 	                <th class="results">Name</th>
 	                <th class="results">Mean (µ)</th>
 	                <th class="results">Standard Deviation (σ)</th>
-	                <th class="results">Teeth (η)</th>
+	                <th class="results">Rating (η)</th>
 	                <th class="results">Mean (µ)</th>
 	                <th class="results">Standard Deviation (σ)</th>
-	                <th class="results">Teeth (η)</th>
+	                <th class="results">Rating (η)</th>
 	                <th class="results">Mean (µ)</th>
 	                <th class="results">Standard Deviation (σ)</th>
-	                <th class="results">Teeth (η)</th>
+	                <th class="results">Rating (η)</th>
 	            </tr>
 	            <tr id="templateResultsBody">
 	                <td class="results">%Name%</td>

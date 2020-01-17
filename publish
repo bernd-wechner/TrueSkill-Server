@@ -29,7 +29,7 @@ source_dir=$(cd `dirname $0` && pwd)
 # Now publish the site
 echo "Copying site to $server_name..."
 # I include a pacthed version of bottle to work around a lighttpd bug: https://redmine.lighttpd.net/issues/3005
-site=(index.py index.html default.css credits.html help.html uwsgi.ini bottle.py)
+site=(index.py index.html default.css credits.html help.html uwsgi.ini favicon.ico)
 for source in ${site[@]}; do
 	rsync -r "$source_dir/$source" "$server_mount_dir"	
 done
